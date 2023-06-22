@@ -2,9 +2,13 @@ import { Image, Text, TouchableOpacity } from "react-native";
 import check from "../../assets/check.png";
 import s from "./Card.style";
 
-export function Card({ todo }) {
+export function Card({ todo, onPress, onLongPress }) {
   return (
-    <TouchableOpacity style={s.card}>
+    <TouchableOpacity
+      onLongPress={() => onLongPress(todo)}
+      onPress={() => onPress(todo)}
+      style={s.card}
+    >
       <Text
         style={[
           s.text,

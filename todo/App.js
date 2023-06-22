@@ -1,17 +1,55 @@
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import s from "./App.styles";
 import { Header } from "./components/Header/Header";
 import { Card } from "./components/Card/Card";
 import { useState } from "react";
+import { Menu } from "./components/Menu/Menu";
 
 export default function App() {
-  const [todoList, setTodoList] = useState([
-    { id: 1, title: "manger une pizza", isCompleted: true },
-    { id: 2, title: "Boire une bierre", isCompleted: true },
-    { id: 3, title: "Chanter sous la pluie", isCompleted: false },
-    { id: 4, title: "jouer à diablo", isCompleted: true },
-  ]);
+  const [selectedMenu, setSelectedMenu] = useState("all");
+  const [todoList, setTodoList] = useState([]);
+
+  function getFilteredList() {
+    switch (selectedMenu) {
+      case "all":
+        return todoList;
+      case "inProgress":
+        return todoList.filter((todo) => !todo.isCompleted);
+      case "done":
+        return todoList.filter((todo) => todo.isCompleted);
+    }
+  }
+
+  function updateTodo(todo) {
+    const updatedTodo = {
+      ...todo,
+      isCompleted: !todo.isCompleted,
+    };
+    const indexToUpdate = todoList.findIndex(
+      (todo) => todo.id === updatedTodo.id
+    );
+
+    const updatedTodoList = [...todoList];
+    updatedTodoList[indexToUpdate] = updatedTodo;
+    setTodoList(updatedTodoList);
+  }
+
+  function deleteTodo(todo) {
+    Alert.alert("Suppression", "Supprimer cette tâche ?", [
+      {
+        text: "Supprimer",
+        style: "destructive",
+        onPress: () => {
+          setTodoList(todoList.filter((t) => t.id !== todo.id));
+        },
+      },
+      {
+        text: "Annuler",
+        style: "cancel",
+      },
+    ]);
+  }
 
   return (
     <>
@@ -22,9 +60,13 @@ export default function App() {
           </View>
           <View style={s.body}>
             <ScrollView>
-              {todoList.map((c) => (
+              {getFilteredList().map((c) => (
                 <View style={s.cardItem} key={c.id}>
-                  <Card todo={c} />
+                  <Card
+                    onPress={updateTodo}
+                    onLongPress={deleteTodo}
+                    todo={c}
+                  />
                 </View>
               ))}
             </ScrollView>
@@ -32,7 +74,11 @@ export default function App() {
         </SafeAreaView>
       </SafeAreaProvider>
       <View style={s.footer}>
-        <Text>Footer</Text>
+        <Menu
+          todoList={todoList}
+          onPress={setSelectedMenu}
+          selectedMenu={selectedMenu}
+        />
       </View>
     </>
   );
